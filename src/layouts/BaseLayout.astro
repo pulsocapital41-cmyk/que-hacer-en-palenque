@@ -1,0 +1,122 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
+  author?: string;
+  currentCategory?: string;
+}
+
+const {
+  title = '¿Qué hacer en Palenque? | Guía Turística, Cascadas y Ruinas Mayas',
+  description = 'Descubre qué hacer en Palenque, Chiapas: Zona Arqueológica, Cascadas de Agua Azul, Roberto Barrios, Misol-Ha, hoteles, cabañas y la mejor gastronomía chiapaneca.',
+  image = '/logo.png',
+  type = 'website',
+  publishedTime,
+  author = 'Redacción Qué Hacer en Palenque',
+  currentCategory = 'Portada',
+} = Astro.props;
+
+const fullTitle = title.includes('Palenque') ? title : `${title} | ¿Qué hacer en Palenque?`;
+
+const siteUrl = 'https://quehacerenpalenque.com';
+const canonicalURL = new URL(Astro.url.pathname, siteUrl);
+
+const jsonLd = type === 'article'
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': canonicalURL.toString(),
+      },
+      headline: fullTitle,
+      description: description,
+      image: [image.startsWith('http') ? image : new URL(image, siteUrl).toString()],
+      datePublished: publishedTime ? new Date(publishedTime).toISOString() : new Date().toISOString(),
+      dateModified: publishedTime ? new Date(publishedTime).toISOString() : new Date().toISOString(),
+      author: [
+        {
+          '@type': 'Person',
+          name: author,
+        },
+      ],
+      publisher: {
+        '@type': 'NewsMediaOrganization',
+        name: '¿Qué hacer en Palenque?',
+        url: siteUrl,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${siteUrl}/logo.png`,
+        },
+      },
+    }
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'NewsMediaOrganization',
+      name: '¿Qué hacer en Palenque?',
+      url: siteUrl,
+      logo: `${siteUrl}/logo.png`,
+      description: description,
+    };
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary Meta Tags -->
+    <title>{fullTitle}</title>
+    <meta name="title" content={fullTitle} />
+    <meta name="description" content={description} />
+    <meta name="author" content={author} />
+
+    <!-- Open Graph / WhatsApp / Facebook -->
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image.startsWith('http') ? image : new URL(image, siteUrl).toString()} />
+    <meta property="og:site_name" content="¿Qué hacer en Palenque?" />
+    <meta property="og:locale" content="es_MX" />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image.startsWith('http') ? image : new URL(image, siteUrl).toString()} />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Search Engine Directives -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <Header currentCategory={currentCategory} />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

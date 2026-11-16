@@ -1,0 +1,565 @@
+---
+interface Props {
+  currentCategory?: string;
+}
+
+const { currentCategory = 'Portada' } = Astro.props;
+
+const categories = [
+  { name: 'Portada', href: '/' },
+  { name: 'Zona Maya y Cultura', href: '/categoria/zona-maya-y-cultura' },
+  { name: 'Cascadas y Naturaleza', href: '/categoria/cascadas-y-naturaleza' },
+  { name: 'Gastronomía', href: '/categoria/gastronomia' },
+  { name: 'Hospedaje', href: '/categoria/hospedaje' },
+  { name: 'Guía del Viajero', href: '/categoria/guia-del-viajero' },
+  { name: 'Comunidad y Eventos', href: '/categoria/comunidad-y-eventos' },
+];
+
+const todayFormatted = new Intl.DateTimeFormat('es-MX', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(new Date());
+
+const displayDate = todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
+---
+
+<header class="site-header">
+  <!-- Top Citizen Utility Bar -->
+  <div class="top-utility-bar">
+    <div class="container-editorial top-utility-inner">
+      <div class="date-edition">
+        <span class="live-pulse-dot" aria-hidden="true"></span>
+        <span class="portal-status">GUÍA OFICIAL EN VIVO</span>
+        <span class="edition-divider">·</span>
+        <time datetime={new Date().toISOString()}>{displayDate}</time>
+        <span class="edition-divider">|</span>
+        <span class="edition-tag">Palenque · Cascadas · Selva Maya · Chiapas</span>
+      </div>
+      <div class="top-utility-links">
+        <a href="mailto:contacto@quehacerenpalenque.com" class="citizen-report-link">
+          📢 Recomendar Lugar o Evento
+        </a>
+        <a
+          href="https://central.neuronamedios.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="admin-access-link"
+        >
+          Sala de Redacción →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Brand Masthead -->
+  <div class="masthead-wrap">
+    <div class="masthead container-editorial">
+      <div class="masthead-side masthead-left">
+        <div class="weather-ticker">
+          <span class="ticker-label">🌴 AVENTURAS DE UN VIAJERO</span>
+          <span class="ticker-val">Qué ver, comer, explorar y disfrutar en Palenque</span>
+        </div>
+      </div>
+
+      <div class="masthead-center">
+        <a href="/" class="brand-logo-link" aria-label="¿Qué hacer en Palenque? - Ir a Portada">
+          <img
+            src="/logo.png"
+            alt="¿Qué hacer en Palenque?"
+            class="brand-logo-img"
+            width="900"
+            height="358"
+            fetchpriority="high"
+          />
+        </a>
+      </div>
+
+      <div class="masthead-side masthead-right">
+        <button
+          type="button"
+          id="open-search-btn"
+          class="search-trigger-btn"
+          aria-label="Buscar recomendaciones y notas"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="search-btn-text">Buscar en Palenque</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile-First Swipeable Section Navigation Bar -->
+  <nav class="nav-sections-bar" aria-label="Secciones principales">
+    <div class="container-editorial nav-sections-inner">
+      <ul class="nav-list">
+        {categories.map((cat) => {
+          const isActive =
+            currentCategory.toLowerCase() === cat.name.toLowerCase();
+          return (
+            <li class="nav-item">
+              <a
+                href={cat.href}
+                class:list={['nav-link', { 'is-active': isActive }]}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {cat.name}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<!-- Native HTML <dialog> Search Modal -->
+<dialog id="search-dialog" class="search-modal" aria-labelledby="search-modal-title">
+  <div class="search-modal-box">
+    <div class="search-modal-header">
+      <h2 id="search-modal-title" class="search-modal-heading">Buscar en ¿Qué hacer en Palenque?</h2>
+      <button type="button" id="close-search-btn" class="search-close-btn" aria-label="Cerrar buscador">
+        ✕
+      </button>
+    </div>
+    <div class="search-input-wrap">
+      <input
+        type="search"
+        id="editorial-search-input"
+        placeholder="Busca cascadas, hoteles, restaurantes, ruinas..."
+        autocomplete="off"
+      />
+    </div>
+    <div id="search-results-list" class="search-results-container">
+      <p class="search-hint">Escribe al menos 2 letras para filtrar entre más de 300 guías y notas.</p>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .site-header {
+    background-color: var(--color-paper);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 14px rgba(0, 122, 248, 0.08);
+  }
+
+  /* Top Utility Bar */
+  .top-utility-bar {
+    background-color: var(--color-brand-navy);
+    color: #e2e8f0;
+    font-size: 0.75rem;
+    padding: 0.42rem 0;
+    border-bottom: 3px solid var(--color-brand-primary);
+  }
+
+  .top-utility-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .date-edition {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 500;
+  }
+
+  .portal-status {
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #38bdf8;
+    font-size: 0.7rem;
+  }
+
+  .edition-divider,
+  .edition-tag {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .edition-divider,
+    .edition-tag {
+      display: inline;
+      color: #94a3b8;
+    }
+  }
+
+  .top-utility-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .citizen-report-link {
+    display: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: rgba(0, 122, 248, 0.28);
+    border: 1px solid rgba(0, 122, 248, 0.6);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  .citizen-report-link:hover {
+    background-color: var(--color-brand-primary);
+    color: #ffffff;
+  }
+
+  @media (min-width: 640px) {
+    .citizen-report-link {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+
+  .admin-access-link {
+    color: #cbd5e1;
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .admin-access-link:hover {
+    color: #38bdf8;
+  }
+
+  /* Masthead */
+  .masthead-wrap {
+    background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+  }
+
+  .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  @media (min-width: 768px) {
+    .masthead {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+  }
+
+  .masthead-left {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .masthead-left {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .masthead-center {
+    grid-column: 1 / 3;
+    justify-self: start;
+  }
+
+  @media (min-width: 768px) {
+    .masthead-center {
+      grid-column: 2 / 3;
+      justify-self: center;
+    }
+  }
+
+  .masthead-right {
+    grid-column: 3 / 4;
+    justify-self: end;
+  }
+
+  .weather-ticker {
+    display: flex;
+    flex-direction: column;
+    border-left: 3px solid var(--color-brand-primary);
+    padding-left: 0.65rem;
+  }
+
+  .ticker-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--color-brand-primary-dark);
+  }
+
+  .ticker-val {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-brand-slate);
+  }
+
+  .brand-logo-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .brand-logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  @media (min-width: 768px) {
+    .brand-logo-img {
+      height: 68px;
+    }
+  }
+
+  .search-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background-color: var(--color-brand-primary-light);
+    border: 1px solid rgba(0, 122, 248, 0.35);
+    color: var(--color-brand-navy);
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .search-trigger-btn:hover {
+    background-color: var(--color-brand-primary);
+    border-color: var(--color-brand-primary);
+    color: #ffffff;
+  }
+
+  .search-btn-text {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .search-btn-text {
+      display: inline;
+    }
+  }
+
+  /* Section Navigation */
+  .nav-sections-bar {
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-paper);
+  }
+
+  .nav-sections-inner {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .nav-sections-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-list {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .nav-list {
+      justify-content: center;
+      gap: 0.95rem;
+    }
+  }
+
+  .nav-link {
+    display: inline-block;
+    padding: 0.62rem 0.8rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-brand-slate);
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--color-brand-primary);
+  }
+
+  .nav-link.is-active {
+    color: var(--color-brand-navy);
+    border-bottom-color: var(--color-brand-primary);
+  }
+
+  /* Search Modal */
+  .search-modal {
+    width: min(92vw, 600px);
+    border: none;
+    border-radius: 10px;
+    padding: 0;
+    background: var(--color-paper);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+  }
+
+  .search-modal::backdrop {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(3px);
+  }
+
+  .search-modal-box {
+    padding: 1.5rem;
+  }
+
+  .search-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .search-modal-heading {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-brand-navy);
+  }
+
+  .search-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--color-brand-slate);
+    padding: 0.25rem 0.5rem;
+  }
+
+  .search-input-wrap input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    border: 2px solid var(--color-border-strong);
+    border-radius: 6px;
+    outline: none;
+  }
+
+  .search-input-wrap input:focus {
+    border-color: var(--color-brand-primary);
+  }
+
+  .search-results-container {
+    margin-top: 1rem;
+    max-height: 340px;
+    overflow-y: auto;
+  }
+
+  .search-hint {
+    font-size: 0.875rem;
+    color: var(--color-brand-slate);
+    margin: 0.5rem 0;
+  }
+
+  :global(.search-result-item) {
+    display: block;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  :global(.search-result-item:hover .search-result-title) {
+    color: var(--color-brand-primary);
+  }
+
+  :global(.search-result-cat) {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--color-brand-primary);
+    display: block;
+  }
+
+  :global(.search-result-title) {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-brand-navy);
+    margin: 0.15rem 0 0 0;
+  }
+</style>
+
+<script>
+  const dialog = document.getElementById('search-dialog') as HTMLDialogElement | null;
+  const openBtn = document.getElementById('open-search-btn');
+  const closeBtn = document.getElementById('close-search-btn');
+  const input = document.getElementById('editorial-search-input') as HTMLInputElement | null;
+  const resultsContainer = document.getElementById('search-results-list');
+
+  let cachedArticles: Array<{ title: string; slug: string; category: string; excerpt: string }> | null = null;
+
+  openBtn?.addEventListener('click', async () => {
+    dialog?.showModal();
+    input?.focus();
+    if (!cachedArticles) {
+      try {
+        const res = await fetch('/api/search.json');
+        if (res.ok) cachedArticles = await res.json();
+      } catch {
+        cachedArticles = [];
+      }
+    }
+  });
+
+  closeBtn?.addEventListener('click', () => dialog?.close());
+
+  dialog?.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  input?.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!resultsContainer) return;
+
+    if (q.length < 2) {
+      resultsContainer.innerHTML = '<p class="search-hint">Escribe al menos 2 letras para filtrar recomendaciones al instante.</p>';
+      return;
+    }
+
+    const matches = (cachedArticles || []).filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        (a.excerpt || '').toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q)
+    );
+
+    if (matches.length === 0) {
+      resultsContainer.innerHTML = '<p class="search-hint">No se encontraron artículos con ese término.</p>';
+      return;
+    }
+
+    resultsContainer.innerHTML = matches
+      .map(
+        (m) => `
+        <a href="/noticias/${m.slug}" class="search-result-item">
+          <span class="search-result-cat">${m.category}</span>
+          <p class="search-result-title">${m.title}</p>
+        </a>
+      `
+      )
+      .join('');
+  });
+</script>

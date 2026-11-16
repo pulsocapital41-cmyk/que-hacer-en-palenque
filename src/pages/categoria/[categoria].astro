@@ -1,0 +1,147 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NewsCard from '../../components/NewsCard.astro';
+import { getCategorySlug } from '../../utils/cloudinary';
+
+export async function getStaticPaths() {
+  const categories = [
+    {
+      label: 'Zona Maya y Cultura',
+      desc: 'Historia maya, Zona Arqueológica de Palenque, el Templo de las Inscripciones, Pakal el Grande y la Reina Roja.',
+    },
+    {
+      label: 'Cascadas y Naturaleza',
+      desc: 'Cascadas de Agua Azul, Misol-Ha, Roberto Barrios, El Salto y el ecoturismo en la selva chiapaneca.',
+    },
+    {
+      label: 'Gastronomía',
+      desc: 'Restaurantes, taquerías, mariscos, cafeterías, comida típica chiapaneca y los mejores lugares para cenar.',
+    },
+    {
+      label: 'Hospedaje',
+      desc: 'Hoteles en el centro, cabañas con alberca en La Cañada y hostales para todos los presupuestos en Palenque.',
+    },
+    {
+      label: 'Guía del Viajero',
+      desc: 'Itinerarios de 3 días, cómo llegar desde San Cristóbal o Villahermosa, tips de viaje, clima y Tren Maya.',
+    },
+    {
+      label: 'Comunidad y Eventos',
+      desc: 'Eventos locales, ferias, festivales, noticias de interés ciudadano y vida comunitaria en Palenque.',
+    },
+  ];
+
+  const allNoticias = await getCollection('noticias');
+
+  return categories.map((cat) => {
+    const slug = getCategorySlug(cat.label);
+    const filtered = allNoticias
+      .filter((n) => n.data.category === cat.label)
+      .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+    return {
+      params: { categoria: slug },
+      props: {
+        categoryLabel: cat.label,
+        categoryDesc: cat.desc,
+        articles: filtered,
+      },
+    };
+  });
+}
+
+const { categoryLabel, categoryDesc, articles } = Astro.props;
+---
+
+<BaseLayout
+  title={`${categoryLabel} | ¿Qué hacer en Palenque?`}
+  description={categoryDesc}
+  currentCategory={categoryLabel}
+>
+  <div class="container-editorial category-page">
+    <header class="category-banner">
+      <span class="badge-category">{categoryLabel}</span>
+      <h1 class="category-main-title">{categoryLabel}</h1>
+      <p class="category-description">{categoryDesc}</p>
+    </header>
+
+    {articles.length === 0 ? (
+      <div class="empty-state">
+        <p>Aún no hay notas publicadas en esta sección.</p>
+      </div>
+    ) : (
+      <div class="category-articles-grid">
+        {articles.map((article, index) => (
+          <NewsCard article={article} variant="default" isLcp={index === 0} />
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .category-page {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+
+  .category-banner {
+    border-top: 4px solid var(--color-brand-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding: 1.5rem 0;
+    margin-bottom: 2.25rem;
+    position: relative;
+  }
+
+  .category-banner::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: 0;
+    width: 90px;
+    height: 4px;
+    background-color: var(--color-brand-accent);
+  }
+
+  .category-main-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--color-brand-navy);
+    margin: 0.25rem 0 0.5rem 0;
+    line-height: 1.1;
+  }
+
+  .category-description {
+    font-size: 1.05rem;
+    color: var(--color-brand-slate);
+    margin: 0;
+    max-width: 65ch;
+  }
+
+  .category-articles-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .category-articles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .category-articles-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .empty-state {
+    background-color: var(--color-mist);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    border-radius: var(--radius-md);
+  }
+</style>
